@@ -64,10 +64,18 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         content TEXT NOT NULL,
+        category TEXT NOT NULL DEFAULT 'general',
         author_id INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (author_id) REFERENCES users (id)
     )''')
+    
+    # Add category column if it doesn't exist (for existing databases)
+    try:
+        c.execute('ALTER TABLE forum_posts ADD COLUMN category TEXT DEFAULT "general"')
+    except sqlite3.OperationalError:
+        # Column already exists
+        pass
     
     # Forum replies table
     c.execute('''CREATE TABLE IF NOT EXISTS forum_replies (
@@ -292,23 +300,54 @@ def user_profile(user_id):
     return render_template('user_profile.html', user=user, ratings=ratings, avg_rating=avg_rating)
 
 @app.route('/forum')
-def forum():
+@app.route('/forum/<category>')
+def forum(category=None):
+    if 'user_id' not in session:
+        flash('You must be logged in to access the forum.')
+        return redirect(url_for('login'))
+    
     conn = get_db_connection()
-    posts = conn.execute('''
-        SELECT p.*, u.username as author_name,
-               COUNT(r.id) as reply_count
-        FROM forum_posts p 
-        JOIN users u ON p.author_id = u.id 
-        LEFT JOIN forum_replies r ON p.id = r.post_id
-        GROUP BY p.id
-        ORDER BY p.created_at DESC
-    ''').fetchall()
+    
+    if category:
+        posts = conn.execute('''
+            SELECT p.*, u.username as author_name,
+                   COUNT(r.id) as reply_count
+            FROM forum_posts p 
+            JOIN users u ON p.author_id = u.id 
+            LEFT JOIN forum_replies r ON p.id = r.post_id
+            WHERE p.category = ?
+            GROUP BY p.id
+            ORDER BY p.created_at DESC
+        ''', (category,)).fetchall()
+    else:
+        posts = conn.execute('''
+            SELECT p.*, u.username as author_name,
+                   COUNT(r.id) as reply_count
+            FROM forum_posts p 
+            JOIN users u ON p.author_id = u.id 
+            LEFT JOIN forum_replies r ON p.id = r.post_id
+            GROUP BY p.id
+            ORDER BY p.created_at DESC
+        ''').fetchall()
+    
     conn.close()
     
-    return render_template('forum.html', posts=posts)
+    categories = [
+        ('game_items', 'Game Items & Equipment'),
+        ('accounts', 'Game Accounts'),
+        ('currency', 'Game Currency'),
+        ('chat', 'Gaming Chat'),
+        ('general', 'General Discussion')
+    ]
+    
+    return render_template('forum.html', posts=posts, categories=categories, current_category=category)
 
 @app.route('/forum/post/<int:post_id>')
 def forum_post(post_id):
+    if 'user_id' not in session:
+        flash('You must be logged in to view forum posts.')
+        return redirect(url_for('login'))
+    
     conn = get_db_connection()
     post = conn.execute('''
         SELECT p.*, u.username as author_name 
@@ -329,26 +368,36 @@ def forum_post(post_id):
     return render_template('forum_post.html', post=post, replies=replies)
 
 @app.route('/forum/new_post', methods=['GET', 'POST'])
-def new_forum_post():
+@app.route('/forum/new_post/<category>', methods=['GET', 'POST'])
+def new_forum_post(category=None):
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
     if request.method == 'POST':
         title = request.form['title']
         content = request.form['content']
+        post_category = request.form.get('category', 'general')
         
         conn = get_db_connection()
         conn.execute('''
-            INSERT INTO forum_posts (title, content, author_id)
-            VALUES (?, ?, ?)
-        ''', (title, content, session['user_id']))
+            INSERT INTO forum_posts (title, content, category, author_id)
+            VALUES (?, ?, ?, ?)
+        ''', (title, content, post_category, session['user_id']))
         conn.commit()
         conn.close()
         
         flash('Post created successfully!')
-        return redirect(url_for('forum'))
+        return redirect(url_for('forum', category=post_category))
     
-    return render_template('new_forum_post.html')
+    categories = [
+        ('game_items', 'Game Items & Equipment'),
+        ('accounts', 'Game Accounts'),
+        ('currency', 'Game Currency'),
+        ('chat', 'Gaming Chat'),
+        ('general', 'General Discussion')
+    ]
+    
+    return render_template('new_forum_post.html', categories=categories, selected_category=category)
 
 @app.route('/forum/reply/<int:post_id>', methods=['POST'])
 def forum_reply(post_id):
