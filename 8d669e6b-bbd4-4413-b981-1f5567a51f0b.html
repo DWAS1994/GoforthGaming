@@ -1,0 +1,668 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base target="_self">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Financial Marketplace | CC & Bank Logs</title>
+    <meta name="description" content="Premium marketplace for financial products including credit cards and bank login logs. Secure crypto payments only.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1a1a2e",
+                        secondary: "#16213e",
+                        accent: "#0f3460",
+                        success: "#00b894",
+                        warning: "#fdcb6e",
+                        danger: "#d63031",
+                        "card-low": "#2ecc71",
+                        "card-mid": "#3498db",
+                        "card-high": "#9b59b6",
+                        "bank-low": "#e74c3c",
+                        "bank-mid": "#f39c12",
+                        "bank-high": "#1abc9c"
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        .crypto-address {
+            font-family: 'Courier New', monospace;
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid;
+        }
+        .status-confirmed {
+            background: linear-gradient(90deg, #00b89422, transparent);
+        }
+        .status-pending {
+            background: linear-gradient(90deg, #fdcb6e22, transparent);
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg text-gray-100 font-inter">
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 bg-primary/95 backdrop-blur-sm border-b border-gray-800">
+        <nav class="container mx-auto px-4 py-4">
+            <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
+                        <i class="fas fa-shield-alt text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold">Elite Financial Marketplace</h1>
+                        <p class="text-xs text-gray-400">Secure • Anonymous • Reliable</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-6">
+                    <a href="#" class="hover:text-accent transition-colors" onclick="showSection('products')">
+                        <i class="fas fa-shopping-cart mr-2"></i>Products
+                    </a>
+                    <a href="#" class="hover:text-accent transition-colors" onclick="showSection('wallet')">
+                        <i class="fas fa-wallet mr-2"></i>Wallet
+                    </a>
+                    <a href="#" class="hover:text-accent transition-colors" onclick="showSection('deposit')">
+                        <i class="fas fa-coins mr-2"></i>Deposit
+                    </a>
+                    <a href="#" class="hover:text-accent transition-colors" onclick="showSection('orders')">
+                        <i class="fas fa-history mr-2"></i>Orders
+                    </a>
+                    <a href="#" class="hover:text-accent transition-colors relative" onclick="showSection('inbox')">
+                        <i class="fas fa-inbox mr-2"></i>Inbox
+                        <span id="inboxBadge" class="absolute -top-2 -right-2 bg-danger text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                    </a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <div class="text-sm text-gray-400">Balance</div>
+                        <div class="text-lg font-bold" id="balanceDisplay">$0.00</div>
+                    </div>
+                    <button onclick="showSection('wallet')" class="bg-accent hover:bg-opacity-90 px-4 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Add Funds
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- Products Section -->
+        <section id="productsSection" class="space-y-12">
+            <!-- Credit Cards Section -->
+            <div>
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold">Credit Cards</h2>
+                    <div class="flex space-x-2">
+                        <span class="px-3 py-1 rounded-full text-xs bg-card-low/20 text-card-low">Low Tier</span>
+                        <span class="px-3 py-1 rounded-full text-xs bg-card-mid/20 text-card-mid">Mid Tier</span>
+                        <span class="px-3 py-1 rounded-full text-xs bg-card-high/20 text-card-high">High Tier</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Low Tier CC -->
+                    <div class="bg-secondary rounded-xl p-6 card-hover border border-card-low/30">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="px-3 py-1 rounded-full text-sm bg-card-low/20 text-card-low font-medium">Low Tier</span>
+                                <h3 class="text-xl font-bold mt-2">Basic Credit Cards</h3>
+                            </div>
+                            <div class="text-2xl font-bold text-card-low">$25</div>
+                        </div>
+                        <p class="text-gray-400 mb-4">Entry-level cards with moderate limits. Perfect for beginners.</p>
+                        <div class="space-y-3 mb-6">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Limit Range:</span>
+                                <span class="font-medium">$2,500 - $5,200</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Success Rate:</span>
+                                <span class="font-medium text-success">85%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Stock:</span>
+                                <span class="font-medium">47 Available</span>
+                            </div>
+                        </div>
+                        <button onclick="addToCart('low_cc', 25, 'Low Tier Credit Card')" class="w-full bg-card-low hover:bg-opacity-90 text-white font-medium py-3 rounded-lg transition-colors">
+                            <i class="fas fa-cart-plus mr-2"></i>Add to Cart
+                        </button>
+                    </div>
+                    
+                    <!-- Mid Tier CC -->
+                    <div class="bg-secondary rounded-xl p-6 card-hover border border-card-mid/30">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="px-3 py-1 rounded-full text-sm bg-card-mid/20 text-card-mid font-medium">Mid Tier</span>
+                                <h3 class="text-xl font-bold mt-2">Premium Credit Cards</h3>
+                            </div>
+                            <div class="text-2xl font-bold text-card-mid">$60</div>
+                        </div>
+                        <p class="text-gray-400 mb-4">High-limit cards from major banks. Excellent value.</p>
+                        <div class="space-y-3 mb-6">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Limit Range:</span>
+                                <span class="font-medium">$8,000 - $12,500</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Success Rate:</span>
+                                <span class="font-medium text-success">92%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Stock:</span>
+                                <span class="font-medium">23 Available</span>
+                            </div>
+                        </div>
+                        <button onclick="addToCart('mid_cc', 60, 'Mid Tier Credit Card')" class="w-full bg-card-mid hover:bg-opacity-90 text-white font-medium py-3 rounded-lg transition-colors">
+                            <i class="fas fa-cart-plus mr-2"></i>Add to Cart
+                        </button>
+                    </div>
+                    
+                    <!-- High Tier CC -->
+                    <div class="bg-secondary rounded-xl p-6 card-hover border border-card-high/30">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="px-3 py-1 rounded-full text-sm bg-card-high/20 text-card-high font-medium">High Tier</span>
+                                <h3 class="text-xl font-bold mt-2">Elite Credit Cards</h3>
+                            </div>
+                            <div class="text-2xl font-bold text-card-high">$120</div>
+                        </div>
+                        <p class="text-gray-400 mb-4">Premium cards with exceptional limits. For professionals only.</p>
+                        <div class="space-y-3 mb-6">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Limit Range:</span>
+                                <span class="font-medium">$150,000+</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Success Rate:</span>
+                                <span class="font-medium text-success">97%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Stock:</span>
+                                <span class="font-medium">8 Available</span>
+                            </div>
+                        </div>
+                        <button onclick="addToCart('high_cc', 120, 'High Tier Credit Card')" class="w-full bg-card-high hover:bg-opacity-90 text-white font-medium py-3 rounded-lg transition-colors">
+                            <i class="fas fa-cart-plus mr-2"></i>Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bank Logs Section -->
+            <div>
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold">Bank Login Logs</h2>
+                    <div class="flex space-x-2">
+                        <span class="px-3 py-1 rounded-full text-xs bg-bank-low/20 text-bank-low">Bank of America</span>
+                        <span class="px-3 py-1 rounded-full text-xs bg-bank-mid/20 text-bank-mid">Chase</span>
+                        <span class="px-3 py-1 rounded-full text-xs bg-bank-high/20 text-bank-high">Discover</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Bank of America -->
+                    <div class="bg-secondary rounded-xl p-6 card-hover border border-bank-low/30">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 rounded-lg bg-bank-low/20 flex items-center justify-center mr-4">
+                                <i class="fas fa-university text-2xl text-bank-low"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold">Bank of America</h3>
+                                <p class="text-gray-400 text-sm">Full login credentials</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <!-- Low Tier Bank -->
+                            <div class="bg-primary/50 rounded-lg p-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-medium">Low Tier</span>
+                                    <span class="text-bank-low font-bold">$25</span>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-3">Basic accounts with standard balances</p>
+                                <button onclick="addToCart('low_boa', 25, 'Bank of America Low Tier')" class="w-full bg-bank-low hover:bg-opacity-90 text-white text-sm font-medium py-2 rounded transition-colors">
+                                    Add to Cart
+                                </button>
+                            </div>
+                            
+                            <!-- Mid Tier Bank -->
+                            <div class="bg-primary/50 rounded-lg p-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-medium">Mid Tier</span>
+                                    <span class="text-bank-mid font-bold">$60</span>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-3">Premium accounts with higher balances</p>
+                                <button onclick="addToCart('mid_boa', 60, 'Bank of America Mid Tier')" class="w-full bg-bank-mid hover:bg-opacity-90 text-white text-sm font-medium py-2 rounded transition-colors">
+                                    Add to Cart
+                                </button>
+                            </div>
+                            
+                            <!-- High Tier Bank -->
+                            <div class="bg-primary/50 rounded-lg p-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-medium">High Tier</span>
+                                    <span class="text-bank-high font-bold">$120</span>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-3">Business/elite accounts with large balances</p>
+                                <button onclick="addToCart('high_boa', 120, 'Bank of America High Tier')" class="w-full bg-bank-high hover:bg-opacity-90 text-white text-sm font-medium py-2 rounded transition-colors">
+                                    Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chase -->
+                    <div class="bg-secondary rounded-xl p-6 card-hover border border-bank-mid/30">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 rounded-lg bg-bank-mid/20 flex items-center justify-center mr-4">
+                                <i class="fas fa-credit-card text-2xl text-bank-mid"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold">Chase Bank</h3>
+                                <p class="text-gray-400 text-sm">Full login credentials</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <!-- Low Tier Bank -->
+                            <div class="bg-primary/50 rounded-lg p-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-medium">Low Tier</span>
+                                    <span class="text-bank-low font-bold">$25</span>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-3">Basic accounts with standard balances</p>
+                                <button onclick="addToCart('low_chase', 25, 'Chase Bank Low Tier')" class="w-full bg-bank-low hover:bg-opacity-90 text-white text-sm font-medium py-2 rounded transition-colors">
+                                    Add to Cart
+                                </button>
+                            </div>
+                            
+                            <!-- Mid Tier Bank -->
+                            <div class="bg-primary/50 rounded-lg p-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-medium">Mid Tier</span>
+                                    <span class="text-bank-mid font-bold">$60</span>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-3">Premium accounts with higher balances</p>
+                                <button onclick="addToCart('mid_chase', 60, 'Chase Bank Mid Tier')" class="w-full bg-bank-mid hover:bg-opacity-90 text-white text-sm font-medium py-2 rounded transition-colors">
+                                    Add to Cart
+                                </button>
+                            </div>
+                            
+                            <!-- High Tier Bank -->
+                            <div class="bg-primary/50 rounded-lg p-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-medium">High Tier</span>
+                                    <span class="text-bank-high font-bold">$120</span>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-3">Business/elite accounts with large balances</p>
+                                <button onclick="addToCart('high_chase', 120, 'Chase Bank High Tier')" class="w-full bg-bank-high hover:bg-opacity-90 text-white text-sm font-medium py-2 rounded transition-colors">
+                                    Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Discover -->
+                    <div class="bg-secondary rounded-xl p-6 card-hover border border-bank-high/30">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 rounded-lg bg-bank-high/20 flex items-center justify-center mr-4">
+                                <i class="fas fa-search-dollar text-2xl text-bank-high"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold">Discover Bank</h3>
+                                <p class="text-gray-400 text-sm">Full login credentials</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <!-- Low Tier Bank -->
+                            <div class="bg-primary/50 rounded-lg p-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-medium">Low Tier</span>
+                                    <span class="text-bank-low font-bold">$25</span>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-3">Basic accounts with standard balances</p>
+                                <button onclick="addToCart('low_discover', 25, 'Discover Bank Low Tier')" class="w-full bg-bank-low hover:bg-opacity-90 text-white text-sm font-medium py-2 rounded transition-colors">
+                                    Add to Cart
+                                </button>
+                            </div>
+                            
+                            <!-- Mid Tier Bank -->
+                            <div class="bg-primary/50 rounded-lg p-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-medium">Mid Tier</span>
+                                    <span class="text-bank-mid font-bold">$60</span>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-3">Premium accounts with higher balances</p>
+                                <button onclick="addToCart('mid_discover', 60, 'Discover Bank Mid Tier')" class="w-full bg-bank-mid hover:bg-opacity-90 text-white text-sm font-medium py-2 rounded transition-colors">
+                                    Add to Cart
+                                </button>
+                            </div>
+                            
+                            <!-- High Tier Bank -->
+                            <div class="bg-primary/50 rounded-lg p-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-medium">High Tier</span>
+                                    <span class="text-bank-high font-bold">$120</span>
+                                </div>
+                                <p class="text-sm text-gray-400 mb-3">Business/elite accounts with large balances</p>
+                                <button onclick="addToCart('high_discover', 120, 'Discover Bank High Tier')" class="w-full bg-bank-high hover:bg-opacity-90 text-white text-sm font-medium py-2 rounded transition-colors">
+                                    Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Wallet & Deposit Section -->
+        <section id="walletSection" class="hidden space-y-8">
+            <div class="flex items-center justify-between">
+                <h2 class="text-2xl font-bold">Wallet & Deposits</h2>
+                <div class="text-right">
+                    <div class="text-sm text-gray-400">Available Balance</div>
+                    <div class="text-3xl font-bold" id="walletBalance">$0.00</div>
+                </div>
+            </div>
+            
+            <!-- Deposit Addresses -->
+            <div class="bg-secondary rounded-xl p-6">
+                <h3 class="text-xl font-bold mb-6">Deposit Crypto</h3>
+                <p class="text-gray-400 mb-6">Send crypto to one of the addresses below. Your balance will update after 2 blockchain confirmations.</p>
+                
+                <div class="space-y-6">
+                    <!-- USDT (TRON) -->
+                    <div class="crypto-address p-4 rounded-lg border-l-4 border-yellow-500">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center mr-3">
+                                    <i class="fab fa-usdt text-yellow-500"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold">USDT (TRON Network)</div>
+                                    <div class="text-sm text-gray-400">Tether on TRON</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-400">Min: $10</div>
+                                <div class="font-medium">No maximum</div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="text-sm text-gray-400 mb-1">Deposit Address:</div>
+                            <div class="flex items-center justify-between bg-primary/50 p-3 rounded">
+                                <code class="text-sm break-all" id="usdtAddress">TSmuK3buKXRo3mX9qqgyc9viFJcbzY8BUa</code>
+                                <button onclick="copyAddress('usdtAddress')" class="ml-2 px-3 py-1 bg-accent hover:bg-opacity-90 rounded text-sm">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- BTC -->
+                    <div class="crypto-address p-4 rounded-lg border-l-4 border-orange-500">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center mr-3">
+                                    <i class="fab fa-btc text-orange-500"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold">Bitcoin (BTC)</div>
+                                    <div class="text-sm text-gray-400">Bitcoin Network</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-400">Min: $10</div>
+                                <div class="font-medium">No maximum</div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="text-sm text-gray-400 mb-1">Deposit Address:</div>
+                            <div class="flex items-center justify-between bg-primary/50 p-3 rounded">
+                                <code class="text-sm break-all" id="btcAddress">3PZcnRNT7wdV9DArU4UAjek9iKX3RsyHXn</code>
+                                <button onclick="copyAddress('btcAddress')" class="ml-2 px-3 py-1 bg-accent hover:bg-opacity-90 rounded text-sm">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- LTC -->
+                    <div class="crypto-address p-4 rounded-lg border-l-4 border-gray-400">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-gray-400/20 flex items-center justify-center mr-3">
+                                    <i class="fab fa-ltc text-gray-400"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold">Litecoin (LTC)</div>
+                                    <div class="text-sm text-gray-400">Litecoin Network</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-400">Min: $10</div>
+                                <div class="font-medium">No maximum</div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="text-sm text-gray-400 mb-1">Deposit Address:</div>
+                            <div class="flex items-center justify-between bg-primary/50 p-3 rounded">
+                                <code class="text-sm break-all" id="ltcAddress">MHuz8XeQsVSdHXSfmFN8on3joUDnuENpnd</code>
+                                <button onclick="copyAddress('ltcAddress')" class="ml-2 px-3 py-1 bg-accent hover:bg-opacity-90 rounded text-sm">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 p-4 bg-primary/30 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-info-circle text-accent mr-3"></i>
+                        <div class="text-sm">
+                            <span class="font-medium">Important:</span> Deposits require 2 blockchain confirmations before being credited to your balance. This usually takes 5-30 minutes depending on network congestion.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Deposits -->
+            <div class="bg-secondary rounded-xl p-6">
+                <h3 class="text-xl font-bold mb-6">Recent Deposits</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-700">
+                                <th class="text-left py-3 px-4">Date</th>
+                                <th class="text-left py-3 px-4">Currency</th>
+                                <th class="text-left py-3 px-4">Amount</th>
+                                <th class="text-left py-3 px-4">Confirmations</th>
+                                <th class="text-left py-3 px-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="depositHistory">
+                            <!-- Deposits will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Deposit Section -->
+        <section id="depositSection" class="hidden">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-2xl font-bold mb-8">Make a Deposit</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <!-- Quick Deposit Amounts -->
+                    <div class="bg-secondary rounded-xl p-6">
+                        <h3 class="text-xl font-bold mb-4">Quick Deposit</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="setDepositAmount(50)" class="bg-primary hover:bg-accent p-4 rounded-lg text-center transition-colors">
+                                <div class="text-lg font-bold">$50</div>
+                                <div class="text-sm text-gray-400">Minimal</div>
+                            </button>
+                            <button onclick="setDepositAmount(100)" class="bg-primary hover:bg-accent p-4 rounded-lg text-center transition-colors">
+                                <div class="text-lg font-bold">$100</div>
+                                <div class="text-sm text-gray-400">Standard</div>
+                            </button>
+                            <button onclick="setDepositAmount(250)" class="bg-primary hover:bg-accent p-4 rounded-lg text-center transition-colors">
+                                <div class="text-lg font-bold">$250</div>
+                                <div class="text-sm text-gray-400">Premium</div>
+                            </button>
+                            <button onclick="setDepositAmount(500)" class="bg-primary hover:bg-accent p-4 rounded-lg text-center transition-colors">
+                                <div class="text-lg font-bold">$500</div>
+                                <div class="text-sm text-gray-400">Bulk</div>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Custom Amount -->
+                    <div class="bg-secondary rounded-xl p-6 md:col-span-2">
+                        <h3 class="text-xl font-bold mb-4">Custom Amount</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Amount in USD</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2">$</span>
+                                    <input type="number" id="customAmount" min="10" step="0.01" class="w-full bg-primary border border-gray-700 rounded-lg py-3 pl-8 pr-4 focus:outline-none focus:border-accent" placeholder="Enter amount">
+                                </div>
+                                <div class="text-sm text-gray-400 mt-1">Minimum deposit: $10</div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Select Currency</label>
+                                <div class="grid grid-cols-3 gap-3">
+                                    <button onclick="selectCurrency('USDT')" class="currency-btn bg-primary hover:bg-accent p-3 rounded-lg text-center transition-colors" data-currency="USDT">
+                                        <i class="fab fa-usdt text-yellow-500 text-xl mb-2"></i>
+                                        <div>USDT</div>
+                                    </button>
+                                    <button onclick="selectCurrency('BTC')" class="currency-btn bg-primary hover:bg-accent p-3 rounded-lg text-center transition-colors" data-currency="BTC">
+                                        <i class="fab fa-btc text-orange-500 text-xl mb-2"></i>
+                                        <div>BTC</div>
+                                    </button>
+                                    <button onclick="selectCurrency('LTC')" class="currency-btn bg-primary hover:bg-accent p-3 rounded-lg text-center transition-colors" data-currency="LTC">
+                                        <i class="fab fa-ltc text-gray-400 text-xl mb-2"></i>
+                                        <div>LTC</div>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <button onclick="generateDeposit()" class="w-full bg-accent hover:bg-opacity-90 text-white font-medium py-3 rounded-lg transition-colors">
+                                Generate Deposit Address
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Generated Deposit Info -->
+                <div id="generatedDeposit" class="hidden bg-secondary rounded-xl p-6">
+                    <h3 class="text-xl font-bold mb-4">Send Payment</h3>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-primary/30 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <div class="font-medium">Amount to Send:</div>
+                                <div class="text-xl font-bold" id="depositAmountDisplay">$0.00</div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div class="font-medium">Currency:</div>
+                                <div class="text-lg" id="depositCurrencyDisplay">USDT</div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="text-sm text-gray-400 mb-2">Send exactly this amount to:</div>
+                            <div class="flex items-center justify-between bg-primary p-4 rounded-lg">
+                                <code class="text-sm break-all" id="generatedAddress"></code>
+                                <button onclick="copyAddress('generatedAddress')" class="ml-4 px-4 py-2 bg-accent hover:bg-opacity-90 rounded">
+                                    <i class="fas fa-copy mr-2"></i>Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 bg-warning/10 border border-warning/30 rounded-lg">
+                            <div class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-warning mt-1 mr-3"></i>
+                                <div class="text-sm">
+                                    <span class="font-medium">Warning:</span> Send the exact amount shown above. Sending a different amount may result in loss of funds. The address will expire in 1 hour.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Orders Section -->
+        <section id="ordersSection" class="hidden">
+            <h2 class="text-2xl font-bold mb-8">Order History</h2>
+            
+            <div class="bg-secondary rounded-xl p-6">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-700">
+                                <th class="text-left py-3 px-4">Order ID</th>
+                                <th class="text-left py-3 px-4">Product</th>
+                                <th class="text-left py-3 px-4">Date</th>
+                                <th class="text-left py-3 px-4">Amount</th>
+                                <th class="text-left py-3 px-4">Status</th>
+                                <th class="text-left py-3 px-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderHistory">
+                            <!-- Orders will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Inbox Section -->
+        <section id="inboxSection" class="hidden">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-bold">Order Delivery Inbox</h2>
+                <button onclick
